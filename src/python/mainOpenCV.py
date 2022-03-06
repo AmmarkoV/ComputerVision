@@ -45,8 +45,7 @@ if (len(sys.argv)>1):
        if (checkIfFileExists(filename)):
          print('Reading image ',filename)
          img = readImage(filename)
-         print('Image Dimensions :', img.shape) 
-         print(img)
+         print('Image Dimensions :', img.shape)  
 
          print('Processing image ',filename)
          processed_image,result = processImage(img)
