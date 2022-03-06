@@ -14,7 +14,7 @@ int writeClassificationOutput(const char * filename,int result)
 }
 
 
-int processPNM(struct Image * image,const char * filename)
+int processImage(struct Image * image,const char * filename)
 {
   if (image!=0)
   {
@@ -66,7 +66,7 @@ int main(int argc,const char **argv)
           fprintf(stderr," It looks like it is %ux%u:%u dimensions \n",image->width,image->height,image->channels);  
           
           fprintf(stderr,"Processing image..\n");  
-          int result = processPNM(image,filename);
+          int result = processImage(image,filename);
 
           snprintf(outputFilename,512,"%s-processed.pnm",filename);
           fprintf(stderr,"Writing processed image to %s ..\n",outputFilename);  
