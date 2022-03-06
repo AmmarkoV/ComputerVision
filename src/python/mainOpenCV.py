@@ -1,5 +1,7 @@
 import sys
 import os
+#To get the OpenCV library for python use : 
+#     pip install opencv-python
 import cv2
 
 def checkIfFileExists(filename):
