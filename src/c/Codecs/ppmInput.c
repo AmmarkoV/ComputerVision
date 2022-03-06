@@ -1,10 +1,14 @@
+#include "codecs.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "ppmInput.h"
 
+#define PRINT_COMMENTS 1
 #define PPMREADBUFLEN 256
 
-unsigned int simplePow(unsigned int base,unsigned int exp)
+
+unsigned int simplePowPPM(unsigned int base,unsigned int exp)
 {
     if (exp==0) return 1;
     unsigned int retres=base;
@@ -16,7 +20,38 @@ unsigned int simplePow(unsigned int base,unsigned int exp)
     return retres;
 }
 
-unsigned char * ReadPNM(unsigned char * buffer ,const char * filename,unsigned int *width,unsigned int *height,unsigned long * timestamp , unsigned int * bytesPerPixel , unsigned int * channels)
+
+
+int swapDepthEndianness(struct Image * img)
+{
+  if (img==0) { return 0; }
+  if (img->pixels==0) { return 0; }
+  if (img->bitsperpixel!=16) { fprintf(stderr,"Only 16bit PNM files need swapping ( we have a %u bit x %u channels file )..\n",img->bitsperpixel , img->channels); return 0; }
+
+  unsigned char * traverser=(unsigned char * ) img->pixels;
+  unsigned char * traverserSwap1;//=(unsigned char * ) img->pixels;
+  unsigned char * traverserSwap2;//=(unsigned char * ) img->pixels;
+
+  unsigned int bytesperpixel = (img->bitsperpixel/8);
+  unsigned char * endOfMem = traverser + img->width * img->height * img->channels * bytesperpixel;
+
+  while ( ( traverser < endOfMem)  )
+  {
+    traverserSwap1 = traverser;
+    traverserSwap2 = traverser+1;
+
+    unsigned char tmp = *traverserSwap1;
+    *traverserSwap1 = *traverserSwap2;
+    *traverserSwap2 = tmp;
+
+    traverser += bytesperpixel;
+  }
+
+ return 1;
+}
+
+
+unsigned char * ReadPNM(unsigned char * buffer , char * filename,unsigned int *width,unsigned int *height,unsigned long * timestamp , unsigned int * bytesPerPixel , unsigned int * channels)
 {
    * bytesPerPixel = 0;
    * channels = 0;
@@ -116,33 +151,59 @@ unsigned char * ReadPNM(unsigned char * buffer ,const char * filename,unsigned i
   return buffer;
 }
 
-int savePNM(const char * filename,void * pixels , unsigned int width , unsigned int height , unsigned int channels , unsigned int bitsperchannel)
+
+int ReadPPM(char * filename,struct Image * pic,char read_only_header)
 {
-    if(pixels==0) { fprintf(stderr,"saveRawImageToFileOGLR(%s) called for an unallocated (empty) frame , will not write any file output\n",filename); return 0; }
+  pic->pixels = ReadPNM(pic->pixels , filename, &pic->width, &pic->height, &pic->timestamp ,&pic->bitsperpixel , &pic->channels );
+  pic->bitsperpixel = pic->bitsperpixel * 8; // ( we go from bytes to bits )
+
+  return (pic->pixels!=0);
+}
+
+
+
+int ReadSwappedPPM(char * filename,struct Image * pic,char read_only_header)
+{
+  ReadPPM(filename,pic,read_only_header);
+  swapDepthEndianness(pic);
+  return (pic->pixels!=0);
+}
+
+
+int WritePPM(char * filename,struct Image * pic)
+{
+    //fprintf(stderr,"saveRawImageToFile(%s) called\n",filename);
+    if (pic==0) { return 0; }
+    if ( (pic->width==0) || (pic->height==0) || (pic->channels==0) || (pic->bitsperpixel==0) )
+        {
+          fprintf(stderr,"saveRawImageToFile(%s) called with zero dimensions ( %ux%u %u channels %u bpp\n",filename,pic->width , pic->height,pic->channels,pic->bitsperpixel);
+          return 0;
+        }
+    if(pic->pixels==0) { fprintf(stderr,"saveRawImageToFile(%s) called for an unallocated (empty) frame , will not write any file output\n",filename); return 0; }
+    if (pic->bitsperpixel>16) { fprintf(stderr,"PNM does not support more than 2 bytes per pixel..!\n"); return 0; }
+
     FILE *fd=0;
     fd = fopen(filename,"wb");
 
-    if (bitsperchannel>16) fprintf(stderr,"PNM does not support more than 2 bytes per pixel..!\n");
     if (fd!=0)
     {
         unsigned int n;
-        if (channels==3) fprintf(fd, "P6\n");
-        else if (channels==1) fprintf(fd, "P5\n");
+        if (pic->channels==3) fprintf(fd, "P6\n");
+        else if (pic->channels==1) fprintf(fd, "P5\n");
         else
         {
-            fprintf(stderr,"Invalid channels arg (%u) for SaveRawImageToFile\n",channels);
+            fprintf(stderr,"Invalid channels arg (%u) for SaveRawImageToFile\n",pic->channels);
             fclose(fd);
             return 1;
         }
 
-        fprintf(fd, "%u %u\n%u\n", width, height , simplePow(2 ,bitsperchannel)-1);
+        fprintf(fd, "%d %d\n%u\n", pic->width, pic->height , simplePowPPM(2 ,pic->bitsperpixel)-1);
 
-        float tmp_n = (float) bitsperchannel/ 8;
-        tmp_n = tmp_n *  width * height * channels ;
+        float tmp_n = (float) pic->bitsperpixel/ 8;
+        tmp_n = tmp_n *  pic->width * pic->height * pic->channels ;
         n = (unsigned int) tmp_n;
 
-        fwrite(pixels, 1 , n , fd);
-        fwrite(pixels, 1 , n , fd);
+        fwrite(pic->pixels, 1 , n , fd);
         fflush(fd);
         fclose(fd);
         return 1;
@@ -156,82 +217,14 @@ int savePNM(const char * filename,void * pixels , unsigned int width , unsigned 
 }
 
 
-int writeClassificationOutput(const char * filename,int result)
+
+
+int WriteSwappedPPM(char * filename,struct Image * pic)
 {
-  FILE * fp = fopen(filename,"w");
-  if (fp!=0)
-    {
-      fprintf(fp,"%u\n",result);
-      fclose(fp);
-    }
-}
-
-
-
-int processPNM(unsigned char * buffer,const char * filename,unsigned int width,unsigned int height,unsigned int channels)
-{
-  if (buffer!=0)
-  {
-  unsigned int pixelChannelIndex = 0;
-  for (int y=0; y<height; y++)
-   {
-     for (int x=0; x<width; x++)
-      {
-         char r = buffer[pixelChannelIndex + 0];
-         char g = buffer[pixelChannelIndex + 1];
-         char b = buffer[pixelChannelIndex + 2];
-         
-         //Simple filter to make image monochrome 
-         int averageColor = (r + g + b)/3; 
-         
-         buffer[pixelChannelIndex + 0] = (char) averageColor;
-         buffer[pixelChannelIndex + 1] = (char) averageColor;
-         buffer[pixelChannelIndex + 2] = (char) averageColor; 
-         pixelChannelIndex += 3; // we move 3 bytes on each pixel
-      }
-   }
-  return 1; // Let's always return 1 if buffer exists..
-  }
- return 0;
+   swapDepthEndianness(pic);
+   return WritePPM(filename,pic);
 }
 
 
 
 
-
-
-
-
-int main(int argc,const char **argv)
-{
-  for (int i=0; i<argc; i++)
-   {
-      char outputFilename[512] = {0};
-      const char * filename = argv[i]; //<- our filename given as a parameter to this program
-      unsigned int width=0;
-      unsigned int height=0;
-      unsigned long timestamp=0;
-      unsigned int bytesPerPixel=0;
-      unsigned int channels=0;
-
-      unsigned char * pixelsInMemory = ReadPNM(0,filename,&width,&height,&timestamp,&bytesPerPixel,&channels);
-      if (pixelsInMemory!=0)
-        {
-          fprintf(stderr,"Just loaded %s \n",filename);  
-          fprintf(stderr," It looks like it is %ux%u:%u dimensions \n",width,height,channels);  
-          
-          int result = processPNM(pixelsInMemory,filename,width,height,channels);
-
-          snprintf(outputFilename,512,"%s-processed.pnm",filename);
-          savePNM(outputFilename,pixelsInMemory,width,height,channels,bytesPerPixel*8);
-
-          snprintf(outputFilename,512,"%s.txt",filename);
-          writeClassificationOutput(outputFilename,result);           
-
-
-          free(pixelsInMemory);
-        } 
-   }
-
-
-}
