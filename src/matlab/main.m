@@ -9,8 +9,8 @@ endfunction
 
 function writeResult(filename,result)
  fp = fopen(filename,'w');
- fprintf(fp,"%u\n",result)
- fclose(fp)
+ fprintf(fp,"%u\n",result);
+ fclose(fp);
 endfunction
 
 function processed_image = processImage(image)
@@ -50,5 +50,5 @@ for i = 1:nargin
     writeImage(processed_image,strcat(filename,"_processed.jpg"));
      
     printf(" Writing Result %s \n", filename);
-    writeResult(strcat(filename,".txt"),1)
+    writeResult(strcat(filename,".txt"),1);
 end
