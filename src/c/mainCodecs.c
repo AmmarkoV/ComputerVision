@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Codecs/codecs.h"
- 
+
 int writeClassificationOutput(const char * filename,int result)
 {
   FILE * fp = fopen(filename,"w");
@@ -10,7 +10,9 @@ int writeClassificationOutput(const char * filename,int result)
     {
       fprintf(fp,"%u\n",result);
       fclose(fp);
+      return 1;
     }
+  return 0;
 }
 
 
@@ -28,13 +30,13 @@ int processImage(struct Image * image,const char * filename)
          char r = image->pixels[pixelChannelIndex + 0];
          char g = image->pixels[pixelChannelIndex + 1];
          char b = image->pixels[pixelChannelIndex + 2];
-         
-         //Simple filter to make image monochrome 
-         int averageColor = (r + g + b)/3; 
-         
+
+         //Simple filter to make image monochrome
+         int averageColor = (r + g + b)/3;
+
          image->pixels[pixelChannelIndex + 0] = (char) averageColor; //Write back our new R value
          image->pixels[pixelChannelIndex + 1] = (char) averageColor; //Write back our new G value
-         image->pixels[pixelChannelIndex + 2] = (char) averageColor; //Write back our new B value 
+         image->pixels[pixelChannelIndex + 2] = (char) averageColor; //Write back our new B value
          pixelChannelIndex += 3; // we move 3 bytes on each pixel
       }
     }
@@ -43,10 +45,6 @@ int processImage(struct Image * image,const char * filename)
   }
  return 0;
 }
-
-
-
-
 
 
 
@@ -62,24 +60,24 @@ int main(int argc,const char **argv)
 
       if (image!=0)
         {
-          fprintf(stderr,"Just loaded %s \n",filename);  
-          fprintf(stderr," It looks like it is %ux%u:%u dimensions \n",image->width,image->height,image->channels);  
-          
-          fprintf(stderr,"Processing image..\n");  
+          fprintf(stderr,"Just loaded %s \n",filename);
+          fprintf(stderr," It looks like it is %ux%u:%u dimensions \n",image->width,image->height,image->channels);
+
+          fprintf(stderr,"Processing image..\n");
           int result = processImage(image,filename);
 
           snprintf(outputFilename,512,"%s-processed.pnm",filename);
-          fprintf(stderr,"Writing processed image to %s ..\n",outputFilename);  
+          fprintf(stderr,"Writing processed image to %s ..\n",outputFilename);
           writeImageFile(image,PPM_CODEC,outputFilename);
 
           snprintf(outputFilename,512,"%s.txt",filename);
-          fprintf(stderr,"Writing classification output to %s ..\n",outputFilename);  
-          writeClassificationOutput(outputFilename,result);           
+          fprintf(stderr,"Writing classification output to %s ..\n",outputFilename);
+          writeClassificationOutput(outputFilename,result);
 
 
           destroyImage(image);
-        } 
+        }
    }
 
-
+  return 0;
 }

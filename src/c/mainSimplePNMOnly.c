@@ -163,7 +163,9 @@ int writeClassificationOutput(const char * filename,int result)
     {
       fprintf(fp,"%u\n",result);
       fclose(fp);
+      return 1;
     }
+  return 0;
 }
 
 
@@ -180,13 +182,13 @@ int processPNM(unsigned char * buffer,const char * filename,unsigned int width,u
          char r = buffer[pixelChannelIndex + 0];
          char g = buffer[pixelChannelIndex + 1];
          char b = buffer[pixelChannelIndex + 2];
-         
-         //Simple filter to make image monochrome 
-         int averageColor = (r + g + b)/3; 
-         
+
+         //Simple filter to make image monochrome
+         int averageColor = (r + g + b)/3;
+
          buffer[pixelChannelIndex + 0] = (char) averageColor; //Write back our new R value
          buffer[pixelChannelIndex + 1] = (char) averageColor; //Write back our new G value
-         buffer[pixelChannelIndex + 2] = (char) averageColor; //Write back our new B value 
+         buffer[pixelChannelIndex + 2] = (char) averageColor; //Write back our new B value
          pixelChannelIndex += 3; // we move 3 bytes on each pixel
       }
    }
@@ -217,20 +219,20 @@ int main(int argc,const char **argv)
       unsigned char * pixelsInMemory = ReadPNM(0,filename,&width,&height,&timestamp,&bytesPerPixel,&channels);
       if (pixelsInMemory!=0)
         {
-          fprintf(stderr,"Just loaded %s \n",filename);  
-          fprintf(stderr," It looks like it is %ux%u:%u dimensions \n",width,height,channels);  
-          
+          fprintf(stderr,"Just loaded %s \n",filename);
+          fprintf(stderr," It looks like it is %ux%u:%u dimensions \n",width,height,channels);
+
           int result = processPNM(pixelsInMemory,filename,width,height,channels);
 
           snprintf(outputFilename,512,"%s-processed.pnm",filename);
           savePNM(outputFilename,pixelsInMemory,width,height,channels,bytesPerPixel*8);
 
           snprintf(outputFilename,512,"%s.txt",filename);
-          writeClassificationOutput(outputFilename,result);           
+          writeClassificationOutput(outputFilename,result);
 
 
           free(pixelsInMemory);
-        } 
+        }
    }
 
 
