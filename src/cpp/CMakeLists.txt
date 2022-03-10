@@ -22,9 +22,9 @@ set_target_properties(webcamOpenCVTest PROPERTIES
                       )
 
 
-add_executable(exampleCPPOpenCV mainOpenCV.cpp)   
-target_link_libraries(exampleCPPOpenCV rt dl m ${OpenCV_LIBRARIES}    )
-set_target_properties(exampleCPPOpenCV PROPERTIES 
+add_executable(exampleInCPPOpenCV mainOpenCV.cpp)   
+target_link_libraries(exampleInCPPOpenCV rt dl m ${OpenCV_LIBRARIES}    )
+set_target_properties(exampleInCPPOpenCV PROPERTIES 
                        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}"
                        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}"
                        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}"
