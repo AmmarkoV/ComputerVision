@@ -1,10 +1,12 @@
 #! /usr/bin/octave -qf
-function image = readImage(filename)
-image = imread(filename);
+function loadedImage = readImageFromFile(filename)
+%https://www.mathworks.com/help/matlab/ref/imread.html?searchHighlight=imread&s_tid=srchtitle_imread_1
+loadedImage = imread(filename);
 endfunction
 
-function writeImage(image, filename)
-imwrite(image,filename);
+function writeImageToFile(loadedImage, filename)
+%https://www.mathworks.com/help/matlab/ref/imwrite.html?s_tid=doc_ta
+imwrite(loadedImage,filename);
 endfunction
 
 function writeResult(filename,result)
@@ -13,16 +15,16 @@ function writeResult(filename,result)
  fclose(fp);
 endfunction
 
-function processed_image = processImage(image)
-[height width channels] = size(image);
-processed_image = image;
-  for y = 1:height
-   for x = 1:width
-      r = image(y,x,1);
-      g = image(y,x,2);
-      b = image(y,x,3);
+function processed_image = processImage(loadedImage)
+[height width channels] = size(loadedImage);
+processed_image = loadedImage;
+  for y = 1:height;
+   for x = 1:width;
+      r = loadedImage(y,x,1);
+      g = loadedImage(y,x,2);
+      b = loadedImage(y,x,3);
       
-      averageColor = (r + g + b) / 3 ;
+      averageColor = (r + g + b) / 3;
       
       processed_image(y,x,1) = averageColor;
       processed_image(y,x,2) = averageColor;
@@ -37,17 +39,19 @@ endfunction
 printf("%s", program_name());
 arg_list = argv();
 for i = 1:nargin
-    filename = arg_list{i}
+    filename = arg_list{i};
+    
     printf(" Reading Image %s \n", filename);
-    image = readImage(filename);
-    [height width channels] = size(image);
+    loadedImage = readImageFromFile(filename);
+    
+    [height width channels] = size(loadedImage);
     printf(" Reading Image %ux%u:%u \n",width,height,channels);
     
     printf(" Processing Image %s \n", filename);
-    processed_image = processImage(image);
+    processed_image = processImage(loadedImage);
     
     printf(" Writing Image %s \n", filename);
-    writeImage(processed_image,strcat(filename,"_processed.jpg"));
+    writeImageToFile(processed_image,strcat(filename,"_processed.jpg"));
      
     printf(" Writing Result %s \n", filename);
     writeResult(strcat(filename,".txt"),1);
