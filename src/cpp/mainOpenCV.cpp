@@ -56,7 +56,7 @@ int main(int argc,const char **argv)
       char outputFilename[512] = {0};
       const char * filename = argv[i]; //<- our filename given as a parameter to this program
 
-      cv::Mat image = cv::imread(filename, CV_LOAD_IMAGE_COLOR);   // Read the file;
+      cv::Mat image = cv::imread(filename, cv::IMREAD_COLOR);   // Read the file older versions of OpenCV might want CV_LOAD_IMAGE_COLOR instead of IMREAD_COLOR
       
       if (image.data!=0)
         {
