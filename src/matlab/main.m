@@ -1,11 +1,15 @@
 #! /usr/bin/octave -qf
+    
+filesToProcess = [
+                  "../../images/dice.png",
+                  "../../images/dice.jpg",
+                  "../../images/dice.pnm"
+                 ]
+
+printf("We have %u arguments\n",size(filesToProcess));
  
- 
-function ans=main()
-printf("%s", program_name());
-arg_list = argv();
-for i = 1:nargin
-    filename = arg_list{i};
+for i = 1:size(filesToProcess)
+    filename = filesToProcess(i,:);
     
     printf(" Reading Image %s \n", filename);
     loadedImage = readImageFromFile(filename);
@@ -21,5 +25,5 @@ for i = 1:nargin
      
     printf(" Writing Result %s \n", filename);
     writeResult(strcat(filename,".txt"),1);
-endfor
-endfunction
+ 
+end
