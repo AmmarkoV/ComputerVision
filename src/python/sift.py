@@ -27,6 +27,31 @@ if (len(sys.argv)>1):
            sift = cv2.SIFT_create()
            #sift = cv2.xfeatures2d.SIFT_create() 
            kp = sift.detect(gray, None)
+           kp,des = sift.detectAndCompute(gray, None)
+           
+           print("Descriptor Dimensions are : ")
+           descriptorElements  = len(des[0])
+           numberOfDescriptors = len(des)
+           print(" ",numberOfDescriptors,"x",descriptorElements)
+
+
+           f = open(inputImage+"-descriptors.csv", "w")
+           f.write("d0")
+           for i in range(1,descriptorElements): 
+              f.write(",d%u"%i)
+           f.write("\n")
+           #--------------------------------------------------
+           for d in range(0,numberOfDescriptors):
+             f.write(str(des[d][0])) 
+             for i in range(1,descriptorElements):
+               #---------------------------------- 
+               f.write(",")
+               f.write(str(des[d][i]))
+             f.write("\n") 
+           f.close()
+           #--------------------------------------------------
+
+
   
            # Marking the keypoint on the image using circles
            img=cv2.drawKeypoints(gray,
@@ -34,8 +59,10 @@ if (len(sys.argv)>1):
                                  img,
                                  flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS
                                 ) 
-
            cv2.imwrite(inputImage+'-with-keypoints.jpg', img)
+           #--------------------------------------------------
+
+
 
 
 
@@ -43,7 +70,7 @@ if (len(sys.argv)>1):
            f.write("X,Y,Size,Angle,Response,Octave,ClassID\n")
            keypointNumber = 0
            for keypoint in kp: 
-               print("Dumping Keypoint ",keypointNumber) 
+               #print("Dumping Keypoint ",keypointNumber) 
                #----------------------------------
                f.write(str(keypoint.pt[0]))
                f.write(",")
@@ -62,5 +89,6 @@ if (len(sys.argv)>1):
                #----------------------------------
                keypointNumber=keypointNumber+1
            f.close()
- 
+           #--------------------------------------------------
+
 
