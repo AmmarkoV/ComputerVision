@@ -1,7 +1,5 @@
-
-# Important NOTE:  Use opencv <= 3.4.2.16 as
-# SIFT is no longer available in
-# opencv > 3.4.2.16
+# SIFT is not available in the main python repo/pip due to patents/copyrights
+# you need the opencv-contrib repository 
 
 #python3 -m venv sift_env
 #source sift_env/bin/activate
@@ -23,10 +21,13 @@ if (len(sys.argv)>1):
            # Converting image to grayscale
            gray= cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
   
-           # Applying SIFT detector
-           sift = cv2.SIFT_create()
-           #sift = cv2.xfeatures2d.SIFT_create() 
-           kp = sift.detect(gray, None)
+           # Applying SIFT detector, for new/old OpenCV versions
+           try: 
+             sift = cv2.SIFT_create()
+           except:
+             sift = cv2.xfeatures2d.SIFT_create() 
+
+           #kp = sift.detect(gray, None)
            kp,des = sift.detectAndCompute(gray, None)
            
            print("Descriptor Dimensions are : ")
